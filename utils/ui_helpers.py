@@ -8,6 +8,7 @@ _EMPTY_STATE_FLASH_MARKERS = (
     "no upload history found",
     "no uploads yet",
     "no salary data available",
+    "salary slip generation complete",
 )
 
 

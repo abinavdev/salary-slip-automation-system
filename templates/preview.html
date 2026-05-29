@@ -15,10 +15,7 @@
     </div>
 </div>
 
-<div id="resultAlert"></div>
-<div id="passwordsContainer"></div>
-
-<div id="loadingState" style="display:none;" class="card">
+<div id="loadingState" style="display:none;" class="card section-gap">
     <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="spinner" aria-hidden="true"></span>
@@ -30,6 +27,8 @@
         <p class="muted" style="margin:0;font-size:0.9rem;">One employee per request — stable on Render free tier.</p>
     </div>
 </div>
+
+<div id="resultAlert" class="section-gap" aria-live="polite"></div>
 
 <div class="card card--flat">
     {% if records %}
@@ -112,39 +111,80 @@
     const loadingText = document.getElementById("loadingText");
     const progressBar = document.getElementById("progressBar");
     const resultAlert = document.getElementById("resultAlert");
-    const passwordsContainer = document.getElementById("passwordsContainer");
     const selectAllCheckbox = document.getElementById("selectAll");
+    const emailLogsUrl = "{{ url_for('email_logs_page') }}";
+    const defaultButtonLabel = generateButton ? generateButton.textContent : "Generate & Send";
     const selectAllDesktop = document.getElementById("selectAllDesktop");
 
-    function showAlert(type, message) {
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function showInlineNotice(type, message) {
         resultAlert.innerHTML = `
-            <div class="toast ${type}" style="position: static; width: 100%; margin-bottom: 12px;">${message}</div>
+            <div class="batch-summary-card batch-summary-card--${type}" role="alert">
+                <p class="batch-summary-card__title" style="margin:0;">${escapeHtml(message)}</p>
+            </div>
         `;
     }
 
-    function showPasswords(passwords) {
-        if (!Array.isArray(passwords) || passwords.length === 0) {
-            passwordsContainer.innerHTML = "";
-            return;
+    function showBatchSummary(total, sent, failed, errorMessages) {
+        let tone = "success";
+        if (failed > 0 && sent > 0) {
+            tone = "warning";
+        } else if (failed > 0 && sent === 0) {
+            tone = "danger";
         }
 
-        const rows = passwords
-            .map((item) => `<tr><td>${item.employee}</td><td><code>${item.password}</code></td></tr>`)
-            .join("");
+        const errorList =
+            errorMessages.length > 0
+                ? `<details class="batch-summary-errors">
+                    <summary>View ${failed} failure detail(s)</summary>
+                    <ul>${errorMessages
+                        .slice(0, 10)
+                        .map((msg) => `<li>${escapeHtml(msg)}</li>`)
+                        .join("")}</ul>
+                   </details>`
+                : "";
 
-        passwordsContainer.innerHTML = `
-            <div class="card" style="margin-bottom: 16px;">
-                <h3 style="margin-bottom: 10px;">Generated Passwords</h3>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr><th>Employee</th><th>Password</th></tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                    </table>
+        resultAlert.innerHTML = `
+            <div class="batch-summary-card batch-summary-card--${tone}" role="status">
+                <h3 class="batch-summary-card__title">Salary Slip Generation Completed</h3>
+                <dl class="batch-summary-stats">
+                    <div><dt>Total Processed</dt><dd>${total}</dd></div>
+                    <div><dt>Successfully Sent</dt><dd>${sent}</dd></div>
+                    <div><dt>Failed</dt><dd>${failed}</dd></div>
+                </dl>
+                ${errorList}
+                <div class="batch-summary-card__actions">
+                    <a href="${emailLogsUrl}" class="btn btn-primary btn-sm">View email logs</a>
                 </div>
             </div>
         `;
+        resultAlert.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function setProcessingUi(active) {
+        if (!generateButton) {
+            return;
+        }
+        generateButton.disabled = active || !{{ 'true' if records else 'false' }};
+        if (active) {
+            generateButton.setAttribute("aria-busy", "true");
+            generateButton.textContent = "Processing…";
+        } else {
+            generateButton.removeAttribute("aria-busy");
+            generateButton.textContent = defaultButtonLabel;
+        }
+        document.querySelectorAll(".row-select, #selectAll, #selectAllDesktop").forEach((el) => {
+            if (el) {
+                el.disabled = active;
+            }
+        });
     }
 
   /** Match hr-portal.css breakpoint — only one view is visible, but both exist in the DOM. */
@@ -186,7 +226,11 @@
     function updateProgress(current, total, employeeId) {
         const pct = total === 0 ? 0 : Math.round((current / total) * 100);
         progressBar.style.width = `${pct}%`;
-        loadingText.textContent = `Processing ${current} of ${total}${employeeId ? ` (${employeeId})` : ""}...`;
+        if (!employeeId && current >= total) {
+            loadingText.textContent = `Finishing… (${total} of ${total})`;
+            return;
+        }
+        loadingText.textContent = `Processing ${current} of ${total}${employeeId ? ` (${employeeId})` : ""}…`;
     }
 
     function setAllRowsChecked(checked) {
@@ -235,26 +279,24 @@
         );
 
         if (selectedIds.length === 0) {
-            showAlert("warning", "Please select at least one employee");
+            showInlineNotice("warning", "Please select at least one employee.");
             return;
         }
 
         isProcessing = true;
-        generateButton.disabled = true;
-        generateButton.setAttribute("aria-busy", "true");
+        setProcessingUi(true);
         loadingState.style.display = "block";
         resultAlert.innerHTML = "";
-        passwordsContainer.innerHTML = "";
 
         let totalSent = 0;
         let totalFailed = 0;
-        const allPasswords = [];
         const errorMessages = [];
+        const total = selectedIds.length;
 
         try {
-            for (let i = 0; i < selectedIds.length; i++) {
+            for (let i = 0; i < total; i++) {
                 const employeeId = selectedIds[i];
-                updateProgress(i, selectedIds.length, employeeId);
+                updateProgress(i + 1, total, employeeId);
 
                 const response = await fetch("{{ url_for('generate_and_send') }}", {
                     method: "POST",
@@ -262,54 +304,37 @@
                     body: JSON.stringify({ selected_ids: [employeeId] }),
                 });
 
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    const msg = data.message || data.error || `Request failed for ${employeeId}`;
-                    errorMessages.push(msg);
+                    const msg =
+                        data.message || data.error || `Request failed for ${employeeId}`;
+                    errorMessages.push(`${employeeId}: ${msg}`);
                     totalFailed += 1;
                     continue;
                 }
 
                 totalSent += data.sent || 0;
                 totalFailed += data.failed || 0;
-                if (data.passwords && data.passwords.length) {
-                    allPasswords.push(...data.passwords);
-                }
                 if (data.failed > 0) {
                     const detail = data.error || data.errors?.[0] || "Send failed";
                     errorMessages.push(`${employeeId}: ${detail}`);
                 }
             }
 
-            updateProgress(selectedIds.length, selectedIds.length);
-
-            const total = selectedIds.length;
-            if (totalFailed === 0) {
-                showAlert(
-                    "success",
-                    `All done. Total: ${total}, Sent: ${totalSent}, Failed: ${totalFailed}.`
-                );
-            } else if (totalSent > 0) {
-                showAlert(
-                    "warning",
-                    `Completed with errors. Total: ${total}, Sent: ${totalSent}, Failed: ${totalFailed}.`
-                );
-            } else {
-                showAlert(
-                    "danger",
-                    `All failed. ${errorMessages[0] || "Check server logs on Render."}`
-                );
-            }
-            showPasswords(allPasswords);
+            updateProgress(total, total, null);
+            showBatchSummary(total, totalSent, totalFailed, errorMessages);
         } catch (error) {
-            showAlert("danger", "An unexpected error occurred while sending salary slips.");
+            showInlineNotice(
+                "danger",
+                "An unexpected error occurred while sending salary slips. Check email logs or try again."
+            );
         } finally {
             loadingState.style.display = "none";
             isProcessing = false;
-            generateButton.disabled = false;
-            generateButton.removeAttribute("aria-busy");
+            setProcessingUi(false);
             progressBar.style.width = "0%";
+            loadingText.textContent = "Preparing...";
         }
     });
 </script>
