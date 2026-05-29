@@ -1,4 +1,8 @@
-"""Filesystem paths for uploads, PDFs, and SQLite (Render-safe)."""
+"""Filesystem paths for uploads and PDFs (Render-safe).
+
+When using PostgreSQL on Render, set INSTANCE_PATH (e.g. /tmp) so uploads and
+generated PDFs are written to a writable directory.
+"""
 
 import os
 from pathlib import Path
@@ -37,6 +41,8 @@ def get_data_root(app_root=None) -> Path:
     Root directory for mutable data (uploads, generated PDFs).
 
     Priority: INSTANCE_PATH > SQLite DATABASE_URL parent > app root.
+
+    With PostgreSQL, INSTANCE_PATH should be set on Render (see render.yaml).
     """
     instance = os.getenv("INSTANCE_PATH", "").strip()
     if instance:

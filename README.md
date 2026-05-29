@@ -68,7 +68,7 @@ This project fulfills **Task 1: Employee Salary Slip Automation System**, which 
 | Layer | Technology |
 |-------|------------|
 | Backend | Python 3, Flask |
-| Database | SQLite with SQLAlchemy ORM |
+| Database | PostgreSQL (production) / SQLite (local dev) with SQLAlchemy ORM |
 | PDF Generation | ReportLab |
 | PDF Encryption | pikepdf |
 | Email | SendGrid API |
@@ -165,7 +165,7 @@ salary-slip-app/
 │   ├── sample_templates.py   # Dynamic Excel sample downloads
 │   ├── slip_service.py       # PDF + email orchestration
 │   ├── auth.py               # Admin authentication
-│   ├── db_migrate.py         # SQLite schema upgrades
+│   ├── db_migrate.py         # Schema upgrades (SQLite + PostgreSQL)
 │   ├── paths.py              # Upload/PDF path helpers
 │   └── logging_config.py     # Logging setup
 ├── uploads/                # Temporary uploaded files
@@ -299,6 +299,10 @@ ADMIN_PASSWORD=ChangeMe@2026
 FLASK_ENV=development
 ```
 
+**Database (local):** Do not set `DATABASE_URL`. The app automatically creates and uses `salary_system.db` in the project folder.
+
+**Database (optional):** To test against PostgreSQL locally, set `DATABASE_URL` to your Postgres connection string in `.env`.
+
 **5. Run the app**
 
 ```bash
@@ -315,6 +319,23 @@ python app.py
 
 Deployed on **Render.com** free tier at [https://salary-slip-automation-system.onrender.com](https://salary-slip-automation-system.onrender.com).
 
+### Render PostgreSQL Setup
+
+1. In the [Render Dashboard](https://dashboard.render.com), open your web service **salary-slip-automation-system**.
+2. Click **New** → **PostgreSQL** (or use the `databases` section in [`render.yaml`](render.yaml)).
+3. Name the database `salary-slip-db` (must match `render.yaml` if using Blueprint).
+4. After the database is created, go to the web service → **Environment**.
+5. Add or confirm these variables:
+   - `DATABASE_URL` — link from the PostgreSQL instance (Render sets this automatically when linked).
+   - `INSTANCE_PATH` — set to `/tmp` (writable storage for uploads and generated PDFs).
+6. Ensure secrets are set: `SECRET_KEY`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SENDGRID_API_KEY`, `FROM_EMAIL`.
+7. **Manual deploy** or push to GitHub to trigger a redeploy.
+8. Verify: open `https://salary-slip-automation-system.onrender.com/health` — `"database": true`.
+
+Tables are created automatically on first startup via `db.create_all()`. No migration script is required for a fresh PostgreSQL database.
+
+> **Note:** Render free PostgreSQL databases expire after 90 days. Upgrade to a paid plan for long-term production use.
+
 **Environment variables set on Render:**
 
 | Variable | Purpose |
@@ -325,7 +346,8 @@ Deployed on **Render.com** free tier at [https://salary-slip-automation-system.o
 | `ADMIN_USERNAME` | Admin login username |
 | `ADMIN_PASSWORD` | Admin login password |
 | `FLASK_ENV` | `production` |
-| `DATABASE_URL` | `sqlite:////tmp/salary_system.db` |
+| `DATABASE_URL` | Auto-injected PostgreSQL connection string (Render) |
+| `INSTANCE_PATH` | `/tmp` — writable path for uploads and PDFs |
 
 **Start command:** `gunicorn -c gunicorn.conf.py app:app`
 
@@ -337,6 +359,8 @@ Deployed on **Render.com** free tier at [https://salary-slip-automation-system.o
 - All architectural decisions, debugging, and deployment handled manually
 - Tested locally on Windows and deployed on Linux (Render)
 - SendGrid API used for reliable cloud email delivery (no SMTP port blocking)
+- PostgreSQL on Render for persistent employee/salary/email data; SQLite used automatically for local development when `DATABASE_URL` is unset
+- Render `postgres://` URLs are normalized to `postgresql://` automatically for SQLAlchemy compatibility
 - Email spam behaviour is a known limitation of SendGrid free tier with personal email addresses — **not** an application defect. Production deployment with a verified custom domain would resolve this completely.
 - Date of birth supports Excel date cells, `DD-MM-YYYY` text, and `YYYY-MM-YYYY` text with automatic conversion
 

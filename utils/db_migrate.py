@@ -1,4 +1,4 @@
-"""Lightweight SQLite schema upgrades without Flask-Migrate."""
+"""Lightweight schema upgrades without Flask-Migrate."""
 
 import logging
 from datetime import date, datetime
@@ -17,38 +17,46 @@ def upgrade_schema(db) -> None:
     engine = db.engine
     inspector = inspect(engine)
 
-    if "employees" in inspector.get_table_names():
-        cols = _column_names(inspector, "employees")
-        with engine.begin() as conn:
-            if "created_at" not in cols:
-                conn.execute(
-                    text(
-                        "ALTER TABLE employees ADD COLUMN created_at DATETIME"
+    try:
+        if engine.dialect.name == "sqlite" and "employees" in inspector.get_table_names():
+            cols = _column_names(inspector, "employees")
+            with engine.begin() as conn:
+                if "created_at" not in cols:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE employees ADD COLUMN created_at DATETIME"
+                        )
                     )
-                )
-                conn.execute(
-                    text(
-                        "UPDATE employees SET created_at = CURRENT_TIMESTAMP "
-                        "WHERE created_at IS NULL"
+                    conn.execute(
+                        text(
+                            "UPDATE employees SET created_at = CURRENT_TIMESTAMP "
+                            "WHERE created_at IS NULL"
+                        )
                     )
-                )
-                logger.info("Added employees.created_at")
-            if "updated_at" not in cols:
-                conn.execute(
-                    text(
-                        "ALTER TABLE employees ADD COLUMN updated_at DATETIME"
+                    logger.info("Added employees.created_at")
+                if "updated_at" not in cols:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE employees ADD COLUMN updated_at DATETIME"
+                        )
                     )
-                )
-                conn.execute(
-                    text(
-                        "UPDATE employees SET updated_at = CURRENT_TIMESTAMP "
-                        "WHERE updated_at IS NULL"
+                    conn.execute(
+                        text(
+                            "UPDATE employees SET updated_at = CURRENT_TIMESTAMP "
+                            "WHERE updated_at IS NULL"
+                        )
                     )
-                )
-                logger.info("Added employees.updated_at")
+                    logger.info("Added employees.updated_at")
 
-    db.create_all()
-    _migrate_dob_values_to_date_objects(db)
+        db.create_all()
+        _migrate_dob_values_to_date_objects(db)
+    except Exception as exc:
+        logger.warning("Schema upgrade encountered an issue: %s", exc)
+        try:
+            db.create_all()
+        except Exception as create_exc:
+            logger.error("Failed to create database tables: %s", create_exc)
+            raise
 
 
 def _migrate_dob_values_to_date_objects(db) -> None:

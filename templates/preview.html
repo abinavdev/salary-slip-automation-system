@@ -141,8 +141,40 @@
         `;
     }
 
+  /** Match hr-portal.css breakpoint — only one view is visible, but both exist in the DOM. */
+    function isMobileView() {
+        return window.matchMedia("(max-width: 1023px)").matches;
+    }
+
+    /** Checkboxes in the currently visible preview (avoids mobile + desktop duplicates). */
     function getRowCheckboxes() {
-        return Array.from(document.querySelectorAll(".row-select"));
+        if (isMobileView()) {
+            const list = document.querySelector(".mobile-card-list");
+            if (list) {
+                return Array.from(list.querySelectorAll(".row-select"));
+            }
+        }
+        const tbody = document.querySelector(".desktop-only tbody");
+        if (tbody) {
+            return Array.from(tbody.querySelectorAll(".row-select"));
+        }
+        return [];
+    }
+
+    function getSelectedEmployeeIds() {
+        const seen = new Set();
+        const ids = [];
+        for (const checkbox of getRowCheckboxes()) {
+            if (!checkbox.checked) {
+                continue;
+            }
+            const id = checkbox.value.trim();
+            if (id && !seen.has(id)) {
+                seen.add(id);
+                ids.push(id);
+            }
+        }
+        return ids;
     }
 
     function updateProgress(current, total, employeeId) {
@@ -152,7 +184,7 @@
     }
 
     function setAllRowsChecked(checked) {
-        getRowCheckboxes().forEach((checkbox) => {
+        document.querySelectorAll(".row-select").forEach((checkbox) => {
             checkbox.checked = checked;
         });
         if (selectAllCheckbox) selectAllCheckbox.checked = checked;
@@ -179,17 +211,31 @@
         }
     });
 
+    let isProcessing = false;
+
     generateButton.addEventListener("click", async () => {
-        const selectedIds = getRowCheckboxes()
-            .filter((checkbox) => checkbox.checked)
-            .map((checkbox) => checkbox.value);
+        if (isProcessing) {
+            return;
+        }
+
+        const selectedIds = getSelectedEmployeeIds();
+        const rawCheckedCount = document.querySelectorAll(".row-select:checked").length;
+        console.debug(
+            "[slip-dispatch] selected unique IDs:",
+            selectedIds.length,
+            selectedIds,
+            "| raw checked checkboxes:",
+            rawCheckedCount
+        );
 
         if (selectedIds.length === 0) {
             showAlert("warning", "Please select at least one employee");
             return;
         }
 
+        isProcessing = true;
         generateButton.disabled = true;
+        generateButton.setAttribute("aria-busy", "true");
         loadingState.style.display = "block";
         resultAlert.innerHTML = "";
         passwordsContainer.innerHTML = "";
@@ -254,7 +300,9 @@
             showAlert("danger", "An unexpected error occurred while sending salary slips.");
         } finally {
             loadingState.style.display = "none";
+            isProcessing = false;
             generateButton.disabled = false;
+            generateButton.removeAttribute("aria-busy");
             progressBar.style.width = "0%";
         }
     });

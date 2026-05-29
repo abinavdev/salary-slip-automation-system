@@ -25,6 +25,17 @@ services:
         value: info
       - key: RENDER
         value: true
+      - key: INSTANCE_PATH
+        value: /tmp
+      - key: DATABASE_URL
+        fromDatabase:
+          name: salary-slip-db
+          property: connectionString
       # Also set in Render dashboard (secrets):
       # SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD, SENDGRID_API_KEY, FROM_EMAIL
-      # Optional: INSTANCE_PATH=/tmp (matches DATABASE_URL on free tier)
+
+databases:
+  - name: salary-slip-db
+    plan: free
+    databaseName: salary_system
+    user: salary_user
