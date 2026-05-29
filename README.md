@@ -1,4 +1,4 @@
-# 💼 Employee Salary Slip Automation System
+# Employee Salary Slip Automation System
 
 > Built for Nippon Toyota | Internship Task 1 Submission
 
@@ -6,20 +6,20 @@ An automated payroll system that generates professional PDF salary slips and ema
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 - **App URL:** https://salary-slip-automation-system.onrender.com
 - **Admin Username:** `admin`
 - **Admin Password:** `ChangeMe@2026`
 
-> ⚠️ **Important Notes:**
+> **Important Notes:**
 >
 > - App is hosted on Render free tier — may take 30–50 seconds to load on first visit (free tier spins down after inactivity).
 > - Salary slip emails are sent via SendGrid API (free tier). Emails may occasionally land in the **spam/junk** folder — this is **not** an application bug. It is a known limitation of SendGrid's free tier when sending from a personal email address (without a verified custom domain). In a production environment with a verified business domain, emails would land directly in the inbox. Please check your spam folder if you don't see the email
 
 ---
 
-## 📋 Task Overview
+## Task Overview
 
 This project fulfills **Task 1: Employee Salary Slip Automation System**, which requires:
 
@@ -30,7 +30,7 @@ This project fulfills **Task 1: Employee Salary Slip Automation System**, which 
 
 ---
 
-## ✅ Features Implemented
+## Features Implemented
 
 ### Core Features
 
@@ -60,29 +60,14 @@ This project fulfills **Task 1: Employee Salary Slip Automation System**, which 
 - Download sample Excel files directly from the app
 - Dashboard with live statistics
 - Mobile-responsive admin UI with collapsible navigation
-- **PostgreSQL on Render** for persistent data across redeploys (SQLite for local dev)
-- **Bulk slip dispatch UX:** one batch summary after all employees finish (progress bar while processing)
-- **Inline empty states** on list pages with call-to-action buttons (no toast spam on first login)
-- **Duplicate-send safeguards:** deduplicated employee selection and backend record handling
+- PostgreSQL on Render for persistent data across redeploys (SQLite for local dev)
+- Bulk slip dispatch UX: one batch summary after all employees finish (progress bar while processing)
+- Inline empty states on list pages with call-to-action buttons (no toast spam on first login)
+- Duplicate-send safeguards: deduplicated employee selection and backend record handling
 
 ---
 
-## 🆕 Recent Updates (since PostgreSQL migration)
-
-Changes added after the initial PostgreSQL deployment documentation:
-
-| Area | What changed |
-|------|----------------|
-| **Database** | Production uses Render PostgreSQL via `DATABASE_URL`; local dev still defaults to `salary_system.db` when unset. `psycopg2-binary` added to dependencies. |
-| **Duplicate emails** | Fixed an issue where **Select All** on Preview could send two emails per employee (duplicate mobile + desktop checkboxes). Selection and backend processing now deduplicate by `employee_id`. |
-| **Empty data UX** | Replaced stacked toast-style empty messages with **inline empty-state cards** on Dashboard, Employees, Salary Records, Email Logs, and Preview. Toasts remain for real actions only (upload success/failure, login, edits, deletes). |
-| **Batch notifications** | Preview **Generate & Send** shows a **single summary card** when the full batch completes (Total Processed, Successfully Sent, Failed). No per-employee success toasts. Per-employee status is in **Email Logs** only. |
-| **While sending** | Button disabled, progress indicator, and duplicate-click prevention during multi-employee runs (one API request per employee for Render free-tier stability). |
-| **Debug** | Temporary admin-only `GET /db-info` endpoint returns masked DB URI, dialect, and table row counts. |
-
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -99,7 +84,7 @@ Changes added after the initial PostgreSQL deployment documentation:
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Employee Table
 
@@ -153,7 +138,7 @@ Changes added after the initial PostgreSQL deployment documentation:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 salary-slip-app/
@@ -199,7 +184,7 @@ Sample Excel templates are generated on demand via `/download/sample-employees` 
 
 ---
 
-## 🧪 How to Test the Live App
+## How to Test the Live App
 
 ### Step 1 — Login
 
@@ -235,7 +220,7 @@ Sample Excel templates are generated on demand via `/download/sample-employees` 
 
 > **Tip:** Use **Email Logs** for per-employee send status and timestamps — not repeated on-screen toasts.
 
-> 📬 **Note on Email Delivery:** Emails are sent via SendGrid API (free tier). If the email does not appear in the inbox, please check the **spam/junk** folder. This is **not** an application bug — it is a known limitation of SendGrid free tier when used with a personal email address without a verified custom domain. In a production environment with a verified business domain, emails would land directly in the inbox.
+> **Note on Email Delivery:** Emails are sent via SendGrid API (free tier). If the email does not appear in the inbox, please check the **spam/junk** folder. This is **not** an application bug — it is a known limitation of SendGrid free tier when used with a personal email address without a verified custom domain. In a production environment with a verified business domain, emails would land directly in the inbox.
 
 ### Step 5 — Check Email Logs
 
@@ -243,7 +228,7 @@ Sample Excel templates are generated on demand via `/download/sample-employees` 
 
 ---
 
-## 📊 Sample File Format
+## Sample File Format
 
 ### Employee Sheet
 
@@ -259,7 +244,7 @@ Sample Excel templates are generated on demand via `/download/sample-employees` 
 
 ---
 
-## 🔐 Password Protected PDFs (Bonus Feature)
+## Password Protected PDFs (Bonus Feature)
 
 Each generated salary slip is automatically password protected using **pikepdf**.
 
@@ -272,7 +257,7 @@ The email sent to employees contains only the **formula hint** — never the act
 
 ---
 
-## ⚙️ Local Setup Instructions
+## Local Setup Instructions
 
 ### Prerequisites
 
@@ -345,7 +330,7 @@ python app.py
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
 Deployed on **Render.com** free tier at [https://salary-slip-automation-system.onrender.com](https://salary-slip-automation-system.onrender.com).
 
@@ -383,7 +368,7 @@ Tables are created automatically on first startup via `db.create_all()`. No migr
 
 ---
 
-## 👨‍💻 Developer Notes
+## Developer Notes
 
 - Built using Visual Studio Code (VS Code) with development assistance from ChatGPT
 - All architectural decisions, debugging, and deployment handled manually
@@ -394,7 +379,6 @@ Tables are created automatically on first startup via `db.create_all()`. No migr
 - Email spam behaviour is a known limitation of SendGrid free tier with personal email addresses — **not** an application defect. Production deployment with a verified custom domain would resolve this completely.
 - Date of birth supports Excel date cells, `DD-MM-YYYY` text, and `YYYY-MM-YYYY` text with automatic conversion
 - Preview batch send: `templates/preview.html` + `utils/ui_helpers.py` (`is_action_flash`) keep the UI professional for large payroll runs
-- Temporary `/db-info` (requires admin session) for verifying database connection and row counts after deploy
 
 ---
 
