@@ -1,0 +1,9 @@
+Flask
+Flask-SQLAlchemy
+pandas
+reportlab
+openpyxl
+pikepdf
+python-dotenv
+sendgrid
+gunicorn

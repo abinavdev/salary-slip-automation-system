@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Upload Monthly Salary Sheet{% endblock %}
+{% block page_title %}Upload Monthly Salary Sheet{% endblock %}
+{% block mobile_title %}Upload Salary{% endblock %}
+
+{% block content %}
+<div class="card card--flat sample-download-card section-gap">
+    <h2>Get Started</h2>
+    <div class="sample-download-actions">
+        <a href="{{ url_for('download_sample_salary') }}" class="btn btn-ghost">
+            Download Sample Salary Sheet
+        </a>
+    </div>
+    <ol class="upload-instructions">
+        <li>Download the sample Excel file and review the required columns.</li>
+        <li>Enter salary data for employees already uploaded in the system.</li>
+        <li>Each row must include a valid <strong>Employee ID</strong> that exists in the employee master.</li>
+        <li>Use numeric values for salary fields; <strong>Month</strong> and <strong>Year</strong> identify the payroll period.</li>
+        <li>Save as <strong>.xlsx</strong> or <strong>.csv</strong>, then upload below to preview and send slips.</li>
+    </ol>
+</div>
+
+<div class="card">
+    <h2 style="font-size:1.1rem;margin-bottom:14px;">Upload File</h2>
+    <form method="POST" action="{{ url_for('upload_salary') }}" enctype="multipart/form-data" class="upload-form">
+        <label for="file">Salary CSV/Excel File</label>
+        <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+        <p class="muted">Accepted formats: .csv, .xlsx</p>
+        <button type="submit" class="btn btn-primary">Upload &amp; Preview</button>
+    </form>
+</div>
+
+<div class="card section-gap">
+    <h2>Column Reference</h2>
+    <div class="table-wrap section-gap">
+        <table class="table-compact">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Base Salary</th>
+                    <th>HRA</th>
+                    <th>Allowances</th>
+                    <th>Deductions</th>
+                    <th>Month</th>
+                    <th>Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>EMP001</td>
+                    <td>25000</td>
+                    <td>5000</td>
+                    <td>2000</td>
+                    <td>1500</td>
+                    <td>May</td>
+                    <td>2026</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

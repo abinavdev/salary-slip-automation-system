@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: salary-slip-app
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -c gunicorn.conf.py app:app
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: WEB_CONCURRENCY
+        value: 1
+      - key: GUNICORN_THREADS
+        value: 2
+      - key: GUNICORN_TIMEOUT
+        value: 120
+      - key: MAX_SLIPS_PER_REQUEST
+        value: 1
+      - key: SENDGRID_TIMEOUT
+        value: 30
+      - key: LOG_LEVEL
+        value: info
+      - key: RENDER
+        value: true
+      # Also set in Render dashboard (secrets):
+      # SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD, SENDGRID_API_KEY, FROM_EMAIL
+      # Optional: INSTANCE_PATH=/tmp (matches DATABASE_URL on free tier)

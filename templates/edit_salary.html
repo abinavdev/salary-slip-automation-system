@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Edit Salary Record{% endblock %}
+{% block page_title %}Edit Salary Record{% endblock %}
+{% block mobile_title %}Edit Salary{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST" action="{{ url_for('edit_salary', record_id=record.id) }}" class="form-grid">
+        <div class="col-6">
+            <label for="employee_id">Employee ID</label>
+            <input type="text" id="employee_id" value="{{ record.employee_id }}" disabled>
+        </div>
+        <div class="col-6">
+            <label for="employee_name">Employee Name</label>
+            <input type="text" id="employee_name" value="{{ employee.name if employee else 'N/A' }}" disabled>
+        </div>
+        <div class="col-3">
+            <label for="base_salary">Base Salary</label>
+            <input type="number" step="0.01" min="0" id="base_salary" name="base_salary" class="salary-input" value="{{ record.base_salary }}" required>
+        </div>
+        <div class="col-3">
+            <label for="hra">HRA</label>
+            <input type="number" step="0.01" min="0" id="hra" name="hra" class="salary-input" value="{{ record.hra }}" required>
+        </div>
+        <div class="col-3">
+            <label for="allowances">Allowances</label>
+            <input type="number" step="0.01" min="0" id="allowances" name="allowances" class="salary-input" value="{{ record.allowances }}" required>
+        </div>
+        <div class="col-3">
+            <label for="deductions">Deductions</label>
+            <input type="number" step="0.01" min="0" id="deductions" name="deductions" class="salary-input" value="{{ record.deductions }}" required>
+        </div>
+        <div class="col-4">
+            <label for="month">Month</label>
+            <input type="text" id="month" name="month" value="{{ record.month }}" required>
+        </div>
+        <div class="col-4">
+            <label for="year">Year</label>
+            <input type="number" id="year" name="year" value="{{ record.year }}" required>
+        </div>
+        <div class="col-4">
+            <label for="net_salary">Net Salary</label>
+            <input type="text" id="net_salary" value="{{ '%.2f'|format(record.net_salary) }}" readonly>
+        </div>
+        <div class="col-12 actions actions-stretch">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ url_for('salary_records_page') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toNumber(value) {
+        const n = parseFloat(value);
+        return Number.isNaN(n) ? 0 : n;
+    }
+
+    function calculateNetSalary() {
+        const base = toNumber(document.getElementById("base_salary").value);
+        const hra = toNumber(document.getElementById("hra").value);
+        const allowances = toNumber(document.getElementById("allowances").value);
+        const deductions = toNumber(document.getElementById("deductions").value);
+        const net = (base + hra + allowances) - deductions;
+        document.getElementById("net_salary").value = net.toFixed(2);
+    }
+
+    document.querySelectorAll(".salary-input").forEach((input) => {
+        input.addEventListener("input", calculateNetSalary);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0e1a">
+    <title>{% block title %}Nippon Toyota HR Portal{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hr-portal.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<header class="mobile-header" aria-label="Mobile navigation">
+    <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="sidebar" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
+    </button>
+    <div class="mobile-header-brand">
+        <div class="brand-badge">NT</div>
+        <span class="mobile-header-title">{% block mobile_title %}Nippon Toyota{% endblock %}</span>
+    </div>
+    <div class="mobile-header-actions">
+        {% if session.get('admin_logged_in') %}
+        <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-sm">Logout</a>
+        {% endif %}
+    </div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+<div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <div class="sidebar-header">
+            <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Close menu">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+            <div class="sidebar-brand">
+                <div class="brand-badge sidebar-brand-badge">NT</div>
+                <div class="sidebar-brand-text">
+                    <span class="brand-title">Nippon Toyota</span>
+                    <span class="brand-subtitle">HR Portal</span>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav nav-links">
+            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="/">
+                <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm10 8h8V11h-8v10zM3 21h8v-6H3v6zm10-18v6h8V3h-8z"/></svg>Dashboard
+            </a>
+            <a class="nav-link {% if request.endpoint == 'upload_employees' %}active{% endif %}" href="/upload-employees">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Upload Employees
+            </a>
+            <a class="nav-link {% if request.endpoint == 'upload_salary' %}active{% endif %}" href="/upload-salary">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>Upload Salary
+            </a>
+            <a class="nav-link {% if request.endpoint in ['employees_page', 'edit_employee_page'] %}active{% endif %}" href="/employees">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Employees
+            </a>
+            <a class="nav-link {% if request.endpoint in ['salary_records_page', 'edit_salary_page'] %}active{% endif %}" href="/salary-records">
+                <svg viewBox="0 0 24 24"><path d="M3 3h18v2H3V3zm2 4h14v14H5V7zm2 2v2h10V9H7zm0 4v2h7v-2H7z"/></svg>Salary Records
+            </a>
+            <a class="nav-link {% if request.endpoint == 'email_logs_page' %}active{% endif %}" href="/email-logs">
+                <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H7v4H4v12h16V8zm-5 0H9V6h6v2zm3 10H6v-8h12v8z"/></svg>Email Logs
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main" id="mainContent">
+        <div class="topbar desktop-only">
+            <h1 class="page-title">{% block page_title %}Nippon Toyota HR Portal{% endblock %}</h1>
+            <div class="topbar-actions">
+                {% if session.get('admin_username') %}
+                <span class="admin-pill">{{ session.admin_username }}</span>
+                {% endif %}
+                <div class="date-text" id="currentDate"></div>
+                {% if session.get('admin_logged_in') %}
+                <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-sm">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<div class="toast-stack" id="toastStack">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="toast {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
+
+<script>
+    (function () {
+        const body = document.body;
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebarClose = document.getElementById("sidebarClose");
+        const sidebarOverlay = document.getElementById("sidebarOverlay");
+        const navLinks = document.querySelectorAll(".nav-link");
+
+        function openNav() {
+            body.classList.add("nav-open");
+            if (menuToggle) menuToggle.setAttribute("aria-expanded", "true");
+            if (sidebarOverlay) sidebarOverlay.setAttribute("aria-hidden", "false");
+        }
+
+        function closeNav() {
+            body.classList.remove("nav-open");
+            if (menuToggle) menuToggle.setAttribute("aria-expanded", "false");
+            if (sidebarOverlay) sidebarOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        function toggleNav() {
+            if (body.classList.contains("nav-open")) closeNav();
+            else openNav();
+        }
+
+        if (menuToggle) menuToggle.addEventListener("click", toggleNav);
+        if (sidebarClose) sidebarClose.addEventListener("click", closeNav);
+        if (sidebarOverlay) sidebarOverlay.addEventListener("click", closeNav);
+
+        navLinks.forEach(function (link) {
+            link.addEventListener("click", function () {
+                if (window.matchMedia("(max-width: 1023px)").matches) closeNav();
+            });
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") closeNav();
+        });
+
+        window.addEventListener("resize", function () {
+            if (window.innerWidth >= 1024) closeNav();
+        });
+    })();
+
+    const dateTarget = document.getElementById("currentDate");
+    if (dateTarget) {
+        const now = new Date();
+        dateTarget.textContent = now.toLocaleDateString(undefined, {
+            weekday: "long", year: "numeric", month: "long", day: "numeric"
+        });
+    }
+
+    setTimeout(function () {
+        document.querySelectorAll(".toast").forEach(function (el) {
+            el.style.opacity = "0";
+            el.style.transition = "opacity 0.3s ease";
+            setTimeout(function () { el.remove(); }, 320);
+        });
+    }, 4000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

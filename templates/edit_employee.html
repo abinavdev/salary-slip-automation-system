@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Edit Employee{% endblock %}
+{% block page_title %}Edit Employee{% endblock %}
+{% block mobile_title %}Edit Employee{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST" action="{{ url_for('edit_employee', employee_id=employee.employee_id) }}" class="form-grid" id="editEmployeeForm" novalidate>
+        <div class="col-12">
+            <label for="employee_id">Employee ID</label>
+            <input type="text" id="employee_id" value="{{ employee.employee_id }}" disabled>
+        </div>
+        <div class="col-12">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ employee.name }}" required>
+        </div>
+        <div class="col-12">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ employee.email }}" required>
+        </div>
+        <div class="col-12">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" name="designation" value="{{ employee.designation }}" required>
+        </div>
+        <div class="col-12">
+            <label for="date_of_birth">Date of Birth (DD-MM-YYYY)</label>
+            <input
+                type="text"
+                id="date_of_birth"
+                name="date_of_birth"
+                value="{{ employee.date_of_birth|dob_display if employee.date_of_birth else '' }}"
+                placeholder="15-06-1995"
+                inputmode="numeric"
+                autocomplete="bday"
+                maxlength="10"
+                pattern="(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-(19|20)\d{2}"
+                aria-describedby="dobHelp dobError"
+            >
+            <p class="muted" id="dobHelp" style="margin:8px 0 0;font-size:13px;">
+                Format: DD-MM-YYYY (e.g. 15-06-1995). Leave blank if not available.
+            </p>
+            <p class="dob-error" id="dobError" role="alert" hidden></p>
+        </div>
+        <div class="col-12 actions actions-stretch">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ url_for('employees_page') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .dob-error {
+        color: #fca5a5;
+        font-size: 13px;
+        margin: 8px 0 0;
+    }
+    input.dob-invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    }
+</style>
+<script>
+(function () {
+    const DOB_PATTERN = /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-(19|20)\d{2}$/;
+    const form = document.getElementById("editEmployeeForm");
+    const dobInput = document.getElementById("date_of_birth");
+    const dobError = document.getElementById("dobError");
+
+    function validateDob(value) {
+        const trimmed = (value || "").trim();
+        if (!trimmed) {
+            return { ok: true, message: "" };
+        }
+        if (!DOB_PATTERN.test(trimmed)) {
+            return {
+                ok: false,
+                message: "Enter date of birth as DD-MM-YYYY (e.g. 15-06-1995).",
+            };
+        }
+        const parts = trimmed.split("-");
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const year = parseInt(parts[2], 10);
+        const dateObj = new Date(year, month - 1, day);
+        if (
+            dateObj.getFullYear() !== year ||
+            dateObj.getMonth() !== month - 1 ||
+            dateObj.getDate() !== day
+        ) {
+            return { ok: false, message: "This date of birth is not a valid calendar date." };
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (dateObj > today) {
+            return { ok: false, message: "Date of birth cannot be in the future." };
+        }
+        return { ok: true, message: "" };
+    }
+
+    function showDobError(message) {
+        if (!message) {
+            dobError.hidden = true;
+            dobError.textContent = "";
+            dobInput.classList.remove("dob-invalid");
+            dobInput.setCustomValidity("");
+            return;
+        }
+        dobError.hidden = false;
+        dobError.textContent = message;
+        dobInput.classList.add("dob-invalid");
+        dobInput.setCustomValidity(message);
+    }
+
+    dobInput.addEventListener("input", function () {
+        const result = validateDob(dobInput.value);
+        showDobError(result.ok ? "" : result.message);
+    });
+
+    form.addEventListener("submit", function (event) {
+        const result = validateDob(dobInput.value);
+        if (!result.ok) {
+            event.preventDefault();
+            showDobError(result.message);
+            dobInput.focus();
+        }
+    });
+})();
+</script>
+{% endblock %}

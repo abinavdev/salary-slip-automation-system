@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Email Dispatch History{% endblock %}
+{% block page_title %}Email Dispatch History{% endblock %}
+{% block mobile_title %}Email Logs{% endblock %}
+
+{% block content %}
+<div class="card card--flat section-gap">
+    <div class="toolbar-row">
+        <p class="muted" style="margin:0;">Newest first</p>
+        <form method="POST" action="{{ url_for('clear_email_logs') }}" onsubmit="return confirm('Clear all email logs?');">
+            <button type="submit" class="btn btn-danger btn-sm">Clear Logs</button>
+        </form>
+    </div>
+</div>
+
+<div class="card card--flat">
+    <div class="mobile-only mobile-card-list">
+        {% for log in logs %}
+        <article class="data-card">
+            <div class="data-card-header">
+                <p class="data-card-title">{{ log.employee_name }}</p>
+                <p class="data-card-sub">{{ log.employee_id }} · {{ log.month }}/{{ log.year }}</p>
+            </div>
+            <div class="data-card-body">
+                <div class="data-card-row">
+                    <span class="label">Sent At</span>
+                    <span class="value">{{ log.sent_at.strftime("%d %b %Y %H:%M") if log.sent_at else "-" }}</span>
+                </div>
+                <div class="data-card-row">
+                    <span class="label">Status</span>
+                    <span class="value">
+                        {% if log.status == 'success' %}
+                        <span class="status-badge status-success">Sent</span>
+                        {% else %}
+                        <span class="status-badge status-failed">Failed</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <p class="empty-state">No email logs found.</p>
+        {% endfor %}
+    </div>
+
+    <div class="desktop-only table-wrap">
+        <table class="table-compact">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Period</th>
+                    <th>Sent At</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.employee_id }}</td>
+                    <td>{{ log.employee_name }}</td>
+                    <td>{{ log.month }}/{{ log.year }}</td>
+                    <td>{{ log.sent_at.strftime("%d %b %Y %H:%M") if log.sent_at else "-" }}</td>
+                    <td>
+                        {% if log.status == 'success' %}
+                        <span class="status-badge status-success">Sent</span>
+                        {% else %}
+                        <span class="status-badge status-failed">Failed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="muted">No email logs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

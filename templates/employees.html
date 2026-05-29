@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Employee Records{% endblock %}
+{% block page_title %}Employee Management{% endblock %}
+{% block mobile_title %}Employees{% endblock %}
+
+{% block content %}
+<div class="card card--flat section-gap">
+    <div class="toolbar-row">
+        <p class="muted" style="margin:0;">{{ total_employees }} employee(s)</p>
+        <a href="{{ url_for('upload_employees') }}" class="btn btn-primary btn-sm">Upload</a>
+    </div>
+</div>
+
+<div class="card card--flat">
+    <form method="GET" action="{{ url_for('employees_page') }}" class="search-bar">
+        <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="search" name="q" value="{{ search }}" placeholder="Search ID or name..." aria-label="Search employees">
+        </div>
+        <div class="search-actions">
+            <button type="submit" class="btn btn-primary btn-sm">Search</button>
+            {% if search %}
+            <a href="{{ url_for('employees_page') }}" class="btn btn-ghost btn-sm">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="mobile-only mobile-card-list">
+        {% for employee in employees %}
+        <article class="data-card">
+            <div class="data-card-header">
+                <p class="data-card-title">{{ employee.name }}</p>
+                <p class="data-card-sub">{{ employee.employee_id }} · {{ employee.designation }}</p>
+            </div>
+            <div class="data-card-body">
+                <div class="data-card-row">
+                    <span class="label">Email</span>
+                    <span class="value"><a href="mailto:{{ employee.email }}" style="color:var(--accent-light);">{{ employee.email }}</a></span>
+                </div>
+                <div class="data-card-row">
+                    <span class="label">Date of Birth</span>
+                    <span class="value">{{ employee.date_of_birth|dob_display }}</span>
+                </div>
+                <div class="data-card-row">
+                    <span class="label">Created</span>
+                    <span class="value">{{ employee.created_at.strftime('%d %b %Y') if employee.created_at else '-' }}</span>
+                </div>
+            </div>
+            <div class="data-card-actions">
+                <a href="{{ url_for('edit_employee_page', employee_id=employee.employee_id) }}" class="btn btn-primary btn-sm">Edit</a>
+                <form method="POST" action="{{ url_for('delete_employee', employee_id=employee.employee_id) }}" onsubmit="return confirm('Delete this employee?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </article>
+        {% else %}
+        <p class="empty-state">No employees found{% if search %} for "{{ search }}"{% endif %}.</p>
+        {% endfor %}
+    </div>
+
+    <div class="desktop-only table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Designation</th>
+                    <th>DOB</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.employee_id }}</td>
+                    <td>{{ employee.name }}</td>
+                    <td>{{ employee.email }}</td>
+                    <td>{{ employee.designation }}</td>
+                    <td>{{ employee.date_of_birth|dob_display }}</td>
+                    <td>{{ employee.created_at.strftime('%d %b %Y') if employee.created_at else '-' }}</td>
+                    <td>{{ employee.updated_at.strftime('%d %b %Y') if employee.updated_at else '-' }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{{ url_for('edit_employee_page', employee_id=employee.employee_id) }}" class="btn btn-primary btn-sm">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_employee', employee_id=employee.employee_id) }}" onsubmit="return confirm('Delete this employee?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="muted">No employees found{% if search %} for "{{ search }}"{% endif %}.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Employee pagination">
+        {% if pagination.has_prev %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('employees_page', page=pagination.prev_num, q=search) }}">Prev</a>
+        {% endif %}
+        <span class="muted">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('employees_page', page=pagination.next_num, q=search) }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

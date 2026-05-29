@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Preview Salary Data{% endblock %}
+{% block page_title %}Preview Salary Data{% endblock %}
+{% block mobile_title %}Preview{% endblock %}
+
+{% block content %}
+<div class="card card--flat section-gap">
+    <div class="toolbar-row">
+        <div>
+            {% if month and year %}
+            <p class="muted" style="margin:0;">Period: <strong>{{ month }} {{ year }}</strong></p>
+            {% endif %}
+        </div>
+        <button id="generateSendBtn" class="btn btn-primary btn-sm" type="button">Generate &amp; Send</button>
+    </div>
+</div>
+
+<div id="resultAlert"></div>
+<div id="passwordsContainer"></div>
+
+<div id="loadingState" style="display:none;" class="card">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span class="spinner" aria-hidden="true"></span>
+            <span id="loadingText">Preparing...</span>
+        </div>
+        <div class="progress-track">
+            <div id="progressBar" class="progress-fill"></div>
+        </div>
+        <p class="muted" style="margin:0;font-size:0.9rem;">One employee per request — stable on Render free tier.</p>
+    </div>
+</div>
+
+<div class="card card--flat">
+    <label class="muted" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <input type="checkbox" id="selectAll" aria-label="Select all employees">
+        Select all employees
+    </label>
+
+    <div class="mobile-only mobile-card-list">
+        {% for record in records %}
+        <article class="data-card">
+            <div class="data-card-header" style="display:flex;gap:10px;align-items:flex-start;">
+                <input class="row-select" type="checkbox" value="{{ record.employee_id }}" aria-label="Select {{ record.employee_id }}" style="margin-top:4px;">
+                <div style="flex:1;min-width:0;">
+                    <p class="data-card-title">{{ record.name }}</p>
+                    <p class="data-card-sub">{{ record.employee_id }} · {{ record.designation }}</p>
+                </div>
+                <span class="net-salary" style="font-size:13px;">₹ {{ "{:,.0f}".format(record.net_salary) }}</span>
+            </div>
+            <div class="data-card-body">
+                <div class="data-card-row"><span class="label">Base</span><span class="value">₹ {{ "{:,.2f}".format(record.base_salary) }}</span></div>
+                <div class="data-card-row"><span class="label">HRA</span><span class="value">₹ {{ "{:,.2f}".format(record.hra) }}</span></div>
+                <div class="data-card-row"><span class="label">Allowances</span><span class="value">₹ {{ "{:,.2f}".format(record.allowances) }}</span></div>
+                <div class="data-card-row"><span class="label">Deductions</span><span class="value">₹ {{ "{:,.2f}".format(record.deductions) }}</span></div>
+            </div>
+        </article>
+        {% else %}
+        <p class="empty-state">No salary data available for preview.</p>
+        {% endfor %}
+    </div>
+
+    <div class="desktop-only table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAllDesktop" aria-label="Select all"> Select</th>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Designation</th>
+                    <th>Base Salary</th>
+                    <th>HRA</th>
+                    <th>Allowances</th>
+                    <th>Deductions</th>
+                    <th>Net Salary</th>
+                    <th>Period</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td><input class="row-select" type="checkbox" value="{{ record.employee_id }}" aria-label="Select {{ record.employee_id }}"></td>
+                    <td>{{ record.employee_id }}</td>
+                    <td>{{ record.name }}</td>
+                    <td>{{ record.designation }}</td>
+                    <td>₹ {{ "{:,.2f}".format(record.base_salary) }}</td>
+                    <td>₹ {{ "{:,.2f}".format(record.hra) }}</td>
+                    <td>₹ {{ "{:,.2f}".format(record.allowances) }}</td>
+                    <td>₹ {{ "{:,.2f}".format(record.deductions) }}</td>
+                    <td class="net-salary">₹ {{ "{:,.2f}".format(record.net_salary) }}</td>
+                    <td>{{ record.month }}/{{ record.year }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="10" class="muted">No salary data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const generateButton = document.getElementById("generateSendBtn");
+    const loadingState = document.getElementById("loadingState");
+    const loadingText = document.getElementById("loadingText");
+    const progressBar = document.getElementById("progressBar");
+    const resultAlert = document.getElementById("resultAlert");
+    const passwordsContainer = document.getElementById("passwordsContainer");
+    const selectAllCheckbox = document.getElementById("selectAll");
+    const selectAllDesktop = document.getElementById("selectAllDesktop");
+
+    function showAlert(type, message) {
+        resultAlert.innerHTML = `
+            <div class="toast ${type}" style="position: static; width: 100%; margin-bottom: 12px;">${message}</div>
+        `;
+    }
+
+    function showPasswords(passwords) {
+        if (!Array.isArray(passwords) || passwords.length === 0) {
+            passwordsContainer.innerHTML = "";
+            return;
+        }
+
+        const rows = passwords
+            .map((item) => `<tr><td>${item.employee}</td><td><code>${item.password}</code></td></tr>`)
+            .join("");
+
+        passwordsContainer.innerHTML = `
+            <div class="card" style="margin-bottom: 16px;">
+                <h3 style="margin-bottom: 10px;">Generated Passwords</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Employee</th><th>Password</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    function getRowCheckboxes() {
+        return Array.from(document.querySelectorAll(".row-select"));
+    }
+
+    function updateProgress(current, total, employeeId) {
+        const pct = total === 0 ? 0 : Math.round((current / total) * 100);
+        progressBar.style.width = `${pct}%`;
+        loadingText.textContent = `Processing ${current} of ${total}${employeeId ? ` (${employeeId})` : ""}...`;
+    }
+
+    function setAllRowsChecked(checked) {
+        getRowCheckboxes().forEach((checkbox) => {
+            checkbox.checked = checked;
+        });
+        if (selectAllCheckbox) selectAllCheckbox.checked = checked;
+        if (selectAllDesktop) selectAllDesktop.checked = checked;
+    }
+
+    function syncSelectAllState() {
+        const rowCheckboxes = getRowCheckboxes();
+        const allChecked = rowCheckboxes.length > 0 && rowCheckboxes.every((cb) => cb.checked);
+        if (selectAllCheckbox) selectAllCheckbox.checked = allChecked;
+        if (selectAllDesktop) selectAllDesktop.checked = allChecked;
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener("change", () => setAllRowsChecked(selectAllCheckbox.checked));
+    }
+    if (selectAllDesktop) {
+        selectAllDesktop.addEventListener("change", () => setAllRowsChecked(selectAllDesktop.checked));
+    }
+
+    document.addEventListener("change", (event) => {
+        if (event.target.classList.contains("row-select")) {
+            syncSelectAllState();
+        }
+    });
+
+    generateButton.addEventListener("click", async () => {
+        const selectedIds = getRowCheckboxes()
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.value);
+
+        if (selectedIds.length === 0) {
+            showAlert("warning", "Please select at least one employee");
+            return;
+        }
+
+        generateButton.disabled = true;
+        loadingState.style.display = "block";
+        resultAlert.innerHTML = "";
+        passwordsContainer.innerHTML = "";
+
+        let totalSent = 0;
+        let totalFailed = 0;
+        const allPasswords = [];
+        const errorMessages = [];
+
+        try {
+            for (let i = 0; i < selectedIds.length; i++) {
+                const employeeId = selectedIds[i];
+                updateProgress(i, selectedIds.length, employeeId);
+
+                const response = await fetch("{{ url_for('generate_and_send') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ selected_ids: [employeeId] }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    const msg = data.message || data.error || `Request failed for ${employeeId}`;
+                    errorMessages.push(msg);
+                    totalFailed += 1;
+                    continue;
+                }
+
+                totalSent += data.sent || 0;
+                totalFailed += data.failed || 0;
+                if (data.passwords && data.passwords.length) {
+                    allPasswords.push(...data.passwords);
+                }
+                if (data.failed > 0) {
+                    const detail = data.error || data.errors?.[0] || "Send failed";
+                    errorMessages.push(`${employeeId}: ${detail}`);
+                }
+            }
+
+            updateProgress(selectedIds.length, selectedIds.length);
+
+            const total = selectedIds.length;
+            if (totalFailed === 0) {
+                showAlert(
+                    "success",
+                    `All done. Total: ${total}, Sent: ${totalSent}, Failed: ${totalFailed}.`
+                );
+            } else if (totalSent > 0) {
+                showAlert(
+                    "warning",
+                    `Completed with errors. Total: ${total}, Sent: ${totalSent}, Failed: ${totalFailed}.`
+                );
+            } else {
+                showAlert(
+                    "danger",
+                    `All failed. ${errorMessages[0] || "Check server logs on Render."}`
+                );
+            }
+            showPasswords(allPasswords);
+        } catch (error) {
+            showAlert("danger", "An unexpected error occurred while sending salary slips.");
+        } finally {
+            loadingState.style.display = "none";
+            generateButton.disabled = false;
+            progressBar.style.width = "0%";
+        }
+    });
+</script>
+{% endblock %}

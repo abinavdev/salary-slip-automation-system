@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0e1a">
+    <title>Admin Login | Nippon Toyota</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --card: #111827;
+            --accent: #c9a84c;
+            --accent-light: #e8c97a;
+            --text: #f0f4ff;
+            --muted: #8892a4;
+            --border: #1e2d45;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --touch: 40px;
+        }
+        * { box-sizing: border-box; }
+        html, body { overflow-x: hidden; margin: 0; }
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: grid;
+            place-items: center;
+            font-family: "DM Sans", sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            background: var(--bg);
+            padding: 16px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 24px 20px;
+        }
+        h1 {
+            font-family: "Playfair Display", serif;
+            margin: 0 0 6px;
+            font-size: 1.35rem;
+        }
+        .muted { color: var(--muted); font-size: 13px; margin-bottom: 18px; line-height: 1.45; }
+        label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px; }
+        input {
+            width: 100%;
+            background: #1a2235;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 10px 12px;
+            min-height: var(--touch);
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+        }
+        .btn {
+            width: 100%;
+            min-height: var(--touch);
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #17120a;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .toast {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            background: #1a2235;
+            font-size: 13px;
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.danger { border-left-color: var(--danger); }
+        .brand-badge {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: #241b08; font-weight: 700; display: grid; place-items: center;
+            font-family: "Playfair Display", serif; margin-bottom: 12px;
+        }
+        @media (min-width: 480px) {
+            .login-card { padding: 28px 24px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="brand-badge">NT</div>
+        <h1>Admin Login</h1>
+        <p class="muted">Nippon Toyota HR Portal &mdash; authorized access only</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required autocomplete="username" autofocus>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password">
+
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>

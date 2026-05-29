@@ -1,0 +1,16 @@
+Hello {{ employee_name }},
+
+Please find attached your salary slip for {{ month }} {{ year }}.
+
+Employee ID: {{ employee_id }}
+Net Salary: {{ net_salary }}
+
+Opening the PDF:
+{{ password_hint_text }}
+
+If you have questions about this payslip, contact HR:
+Email: {{ company_email }}
+{% if company_phone %}Phone: {{ company_phone }}{% endif %}
+{% if company_address %}Address: {{ company_address }}{% endif %}
+
+Sent by: {{ system_name }}

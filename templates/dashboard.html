@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | Nippon Toyota{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block mobile_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+    <div class="card stat-card card--flat">
+        <p class="stat-label">Total Employees</p>
+        <p class="stat-value">{{ total_employees }}</p>
+    </div>
+    <div class="card stat-card card--flat">
+        <p class="stat-label">Salary Records</p>
+        <p class="stat-value">{{ total_salary_records }}</p>
+    </div>
+    <div class="card stat-card card--flat">
+        <p class="stat-label">Emails Sent</p>
+        <p class="stat-value">{{ emails_sent }}</p>
+    </div>
+    <div class="card stat-card card--flat">
+        <p class="stat-label">Upload History</p>
+        <p class="stat-value">{{ total_uploads }}</p>
+    </div>
+</div>
+
+<div class="card section-gap card--flat">
+    <h2>Quick Actions</h2>
+    <div class="action-chips section-gap">
+        <a href="/upload-employees" class="btn btn-primary btn-sm">Upload Employees</a>
+        <a href="/upload-salary" class="btn btn-ghost btn-sm">Upload Salary</a>
+        <a href="/employees" class="btn btn-ghost btn-sm">Manage Employees</a>
+        <a href="/preview" class="btn btn-ghost btn-sm">Preview &amp; Send</a>
+    </div>
+</div>
+
+<div class="grid-2 section-gap">
+    <div class="card card--flat">
+        <h2>How It Works</h2>
+        <ol class="upload-instructions">
+            <li>Upload employee master data (stored permanently by Employee ID).</li>
+            <li>Upload monthly salary sheet (validates Employee IDs exist).</li>
+            <li>Preview, generate password-protected PDFs, and email via SendGrid.</li>
+        </ol>
+    </div>
+    <div class="card card--flat">
+        <h2>Latest Uploads</h2>
+        {% if latest_uploads %}
+        <div class="mobile-only mobile-card-list section-gap">
+            {% for log in latest_uploads %}
+            <article class="data-card">
+                <div class="data-card-header">
+                    <p class="data-card-title">{{ log.file_name }}</p>
+                    <p class="data-card-sub">{{ log.upload_type|capitalize }} · {{ log.uploaded_at.strftime('%d %b %Y %H:%M') if log.uploaded_at else '-' }}</p>
+                </div>
+                <div class="data-card-body">
+                    <div class="data-card-row">
+                        <span class="label">Records Added</span>
+                        <span class="value">{{ log.records_added }}</span>
+                    </div>
+                    <div class="data-card-row">
+                        <span class="label">Records Updated</span>
+                        <span class="value">{{ log.records_updated }}</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        <div class="desktop-only table-wrap section-gap">
+            <table class="table-compact">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>File</th>
+                        <th>Added</th>
+                        <th>Updated</th>
+                        <th>When</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in latest_uploads %}
+                    <tr>
+                        <td>{{ log.upload_type|capitalize }}</td>
+                        <td>{{ log.file_name }}</td>
+                        <td>{{ log.records_added }}</td>
+                        <td>{{ log.records_updated }}</td>
+                        <td>{{ log.uploaded_at.strftime('%d %b %Y %H:%M') if log.uploaded_at else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="muted section-gap">No uploads yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

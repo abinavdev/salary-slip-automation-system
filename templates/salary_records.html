@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Salary Records{% endblock %}
+{% block page_title %}Salary Records{% endblock %}
+{% block mobile_title %}Salary{% endblock %}
+
+{% block content %}
+<div class="card card--flat section-gap">
+    <form method="GET" action="{{ url_for('salary_records_page') }}" class="form-grid filter-form">
+        <div class="col-4">
+            <label for="month">Month</label>
+            <select id="month" name="month">
+                <option value="">All Months</option>
+                {% for month in month_options %}
+                <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>{{ month }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <label for="year">Year</label>
+            <select id="year" name="year">
+                <option value="">All Years</option>
+                {% for year in year_options %}
+                <option value="{{ year }}" {% if selected_year == year|string %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                <a href="{{ url_for('salary_records_page') }}" class="btn btn-ghost btn-sm">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card card--flat">
+    <div class="mobile-only mobile-card-list">
+        {% for record in records %}
+        <details class="expand-card">
+            <summary>
+                <div>
+                    <p class="data-card-title" style="margin:0;">{{ record.name }}</p>
+                    <p class="data-card-sub">{{ record.employee_id }} · {{ record.month }}/{{ record.year }}</p>
+                </div>
+                <span class="net-salary">₹ {{ "{:,.0f}".format(record.net_salary) }}</span>
+            </summary>
+            <div class="expand-body">
+                <div class="data-card-row">
+                    <span class="label">Base Salary</span>
+                    <span class="value">₹ {{ "{:,.2f}".format(record.base_salary) }}</span>
+                </div>
+                <div class="data-card-row">
+                    <span class="label">HRA</span>
+                    <span class="value">₹ {{ "{:,.2f}".format(record.hra) }}</span>
+                </div>
+                <div class="data-card-row">
+                    <span class="label">Allowances</span>
+                    <span class="value">₹ {{ "{:,.2f}".format(record.allowances) }}</span>
+                </div>
+                <div class="data-card-row">
+                    <span class="label">Deductions</span>
+                    <span class="value">₹ {{ "{:,.2f}".format(record.deductions) }}</span>
+                </div>
+                <div class="data-card-actions" style="border-top:none;padding-left:0;padding-right:0;">
+                    <a href="{{ url_for('edit_salary_page', record_id=record.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                    <form method="POST" action="{{ url_for('delete_salary', record_id=record.id) }}" onsubmit="return confirm('Delete this record?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </details>
+        {% else %}
+        <p class="empty-state">No salary records found.</p>
+        {% endfor %}
+    </div>
+
+    <div class="desktop-only table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Base</th>
+                    <th>HRA</th>
+                    <th>Allow.</th>
+                    <th>Deduct.</th>
+                    <th>Net</th>
+                    <th>Period</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.employee_id }}</td>
+                    <td>{{ record.name }}</td>
+                    <td>₹ {{ "{:,.0f}".format(record.base_salary) }}</td>
+                    <td>₹ {{ "{:,.0f}".format(record.hra) }}</td>
+                    <td>₹ {{ "{:,.0f}".format(record.allowances) }}</td>
+                    <td>₹ {{ "{:,.0f}".format(record.deductions) }}</td>
+                    <td class="net-salary">₹ {{ "{:,.0f}".format(record.net_salary) }}</td>
+                    <td>{{ record.month }}/{{ record.year }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{{ url_for('edit_salary_page', record_id=record.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_salary', record_id=record.id) }}" onsubmit="return confirm('Delete this salary record?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="muted">No salary records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p class="payroll-total">Total Payroll: ₹ {{ "{:,.2f}".format(total_payroll) }}</p>
+{% endblock %}

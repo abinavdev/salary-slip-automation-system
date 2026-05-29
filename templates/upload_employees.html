@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Upload Employee Master Data{% endblock %}
+{% block page_title %}Upload Employee Master Data{% endblock %}
+{% block mobile_title %}Upload Employees{% endblock %}
+
+{% block content %}
+<div class="card card--flat sample-download-card section-gap">
+    <h2>Get Started</h2>
+    <div class="sample-download-actions">
+        <a href="{{ url_for('download_sample_employees') }}" class="btn btn-ghost">
+            Download Sample Employee Sheet
+        </a>
+    </div>
+    <ol class="upload-instructions">
+        <li>Download the sample Excel file and review the column layout.</li>
+        <li>Replace the sample row with your employee data (keep the same headers).</li>
+        <li>Date of Birth: use an Excel <strong>Date</strong> cell or text as <strong>DD-MM-YYYY</strong> (e.g. 15-06-1995).</li>
+        <li>Save as <strong>.xlsx</strong> or <strong>.csv</strong>, then upload below.</li>
+        <li>Employee ID must be unique; existing IDs will be updated.</li>
+    </ol>
+</div>
+
+<div class="card">
+    <h2 style="font-size:1.1rem;margin-bottom:14px;">Upload File</h2>
+    <form method="POST" action="{{ url_for('upload_employees') }}" enctype="multipart/form-data" class="upload-form">
+        <label for="file">Employee CSV/Excel File</label>
+        <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+        <p class="muted">Accepted formats: .csv, .xlsx</p>
+        <button type="submit" class="btn btn-primary">Upload &amp; Save Employees</button>
+    </form>
+</div>
+
+<div class="card section-gap">
+    <h2>Column Reference</h2>
+    <div class="table-wrap section-gap">
+        <table class="table-compact">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Designation</th>
+                    <th>Date of Birth</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>EMP001</td>
+                    <td>Arjun Menon</td>
+                    <td>arjun@example.com</td>
+                    <td>Engineer</td>
+                    <td>15-06-1995</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="muted">
+        PDF password uses first 4 letters of name + birth day + month (e.g. <strong>arju1506</strong> for 15-06-1995).
+    </p>
+</div>
+{% endblock %}
