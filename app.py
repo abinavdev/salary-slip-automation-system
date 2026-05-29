@@ -627,12 +627,25 @@ def register_routes(app: Flask) -> None:
     @app.post("/generate-and-send")
     def generate_and_send():
         payload = request.get_json(silent=True) or {}
-        selected_ids = payload.get("selected_ids", [])
-        if not isinstance(selected_ids, list):
-            selected_ids = []
-        selected_ids = [
-            str(employee_id).strip() for employee_id in selected_ids if str(employee_id).strip()
-        ]
+        raw_selected = payload.get("selected_ids", [])
+        if not isinstance(raw_selected, list):
+            raw_selected = []
+
+        seen_ids: set[str] = set()
+        selected_ids: list[str] = []
+        for employee_id in raw_selected:
+            eid = str(employee_id).strip()
+            if eid and eid not in seen_ids:
+                seen_ids.add(eid)
+                selected_ids.append(eid)
+
+        log = logging.getLogger(__name__)
+        log.info(
+            "slip-dispatch request | raw_selected=%s unique_selected=%s ids=%s",
+            len(raw_selected),
+            len(selected_ids),
+            selected_ids,
+        )
 
         month = session.get("preview_month")
         year = session.get("preview_year")
@@ -652,6 +665,21 @@ def register_routes(app: Flask) -> None:
             salary_records = [
                 r for r in salary_records if str(r.employee_id).strip() in selected_set
             ]
+
+        records_by_employee: dict[str, SalaryRecord] = {}
+        for record in salary_records:
+            eid = str(record.employee_id).strip()
+            if eid and eid not in records_by_employee:
+                records_by_employee[eid] = record
+        salary_records = list(records_by_employee.values())
+
+        log.info(
+            "slip-dispatch records | month=%s year=%s to_process=%s employee_ids=%s",
+            month,
+            year,
+            len(salary_records),
+            [str(r.employee_id) for r in salary_records],
+        )
 
         if not salary_records:
             return jsonify(
@@ -685,10 +713,15 @@ def register_routes(app: Flask) -> None:
         passwords = []
         last_error = None
         errors = []
-        log = logging.getLogger(__name__)
 
         for record in salary_records:
             try:
+                log.info(
+                    "slip-dispatch processing | employee_id=%s month=%s year=%s",
+                    record.employee_id,
+                    record.month,
+                    record.year,
+                )
                 employee = Employee.query.filter_by(employee_id=record.employee_id).first()
                 result = process_one_slip(
                     record,

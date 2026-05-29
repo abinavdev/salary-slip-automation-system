@@ -21,6 +21,13 @@ def process_one_slip(record, employee, pdf_folder, db_session, email_log_model):
     employee_id = record.employee_id
     employee_name = employee.name if employee else "Unknown"
 
+    logger.info(
+        "slip-dispatch process_one_slip start | employee_id=%s month=%s year=%s",
+        employee_id,
+        record.month,
+        record.year,
+    )
+
     if not employee:
         error = f"No employee found for ID {employee_id}"
         logger.error(error)
