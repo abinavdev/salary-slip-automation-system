@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 from dotenv import load_dotenv
 
@@ -8,6 +9,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
+
+
+def _normalize_database_url(url: str) -> str:
+    """Render may supply postgres://; SQLAlchemy requires postgresql://."""
+    if url.startswith("postgres://"):
+        return "postgresql://" + url[len("postgres://") :]
+    return url
 
 
 def _sqlite_uri() -> str:
@@ -22,30 +30,56 @@ def _sqlite_uri() -> str:
 
 def _database_uri() -> str:
     """
-    Resolve DB URL safely for Render.
+    Resolve database URL.
 
-    Render auto-sets DATABASE_URL when a Postgres add-on exists; this app uses SQLite.
-    Only honor DATABASE_URL when it is sqlite or set SQLALCHEMY_DATABASE_URI explicitly.
+    Priority: SQLALCHEMY_DATABASE_URI > DATABASE_URL > local SQLite fallback.
     """
     explicit = os.getenv("SQLALCHEMY_DATABASE_URI", "").strip()
     if explicit:
-        return explicit
+        return _normalize_database_url(explicit)
 
     database_url = os.getenv("DATABASE_URL", "").strip()
-    if database_url.startswith("sqlite:"):
-        return database_url
+    if database_url:
+        return _normalize_database_url(database_url)
 
     return _sqlite_uri()
 
 
+def _engine_options(uri: str) -> dict:
+    if uri.startswith("sqlite"):
+        return {
+            "pool_pre_ping": True,
+            "connect_args": {"check_same_thread": False},
+        }
+    return {"pool_pre_ping": True}
+
+
+def mask_database_uri(uri: str) -> str:
+    """Return a log-safe database URI with credentials redacted."""
+    try:
+        parsed = urlparse(uri)
+        if parsed.password:
+            netloc = parsed.hostname or ""
+            if parsed.username:
+                netloc = f"{parsed.username}:****@{netloc}"
+            if parsed.port:
+                netloc = f"{netloc}:{parsed.port}"
+            return urlunparse(
+                (parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)
+            )
+    except Exception:
+        pass
+    return uri
+
+
+_DB_URI = _database_uri()
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
-    SQLALCHEMY_DATABASE_URI = _database_uri()
+    SQLALCHEMY_DATABASE_URI = _DB_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": True,
-        "connect_args": {"check_same_thread": False},
-    }
+    SQLALCHEMY_ENGINE_OPTIONS = _engine_options(_DB_URI)
     UPLOAD_FOLDER = "uploads"
     PDF_FOLDER = "generated_pdfs"
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_UPLOAD_MB", "8")) * 1024 * 1024

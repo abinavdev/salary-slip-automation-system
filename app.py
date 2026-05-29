@@ -18,7 +18,7 @@ from sqlalchemy import or_, text
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 
-from config import get_config
+from config import get_config, mask_database_uri
 from models import EmailLog, Employee, SalaryRecord, UploadLog, db
 from utils.auth import register_auth_middleware, verify_admin_credentials
 from utils.csv_parser import parse_employee_csv, parse_salary_csv
@@ -68,7 +68,7 @@ def create_app() -> Flask:
             os.getenv("FLASK_ENV", "development"),
             app.config["UPLOAD_FOLDER"],
             app.config["PDF_FOLDER"],
-            app.config["SQLALCHEMY_DATABASE_URI"],
+            mask_database_uri(app.config["SQLALCHEMY_DATABASE_URI"]),
         )
         if (
             os.getenv("FLASK_ENV", "").lower() == "production"
