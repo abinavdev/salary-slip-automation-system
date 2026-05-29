@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: salary-slip-app
+    name: salary-slip-automation-system
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt

@@ -8,7 +8,7 @@ An automated payroll system that generates professional PDF salary slips and ema
 
 ## 🚀 Live Demo
 
-- **App URL:** https://salary-slip-app-pozd.onrender.com
+- **App URL:** https://salary-slip-automation-system.onrender.com
 - **Admin Username:** `admin`
 - **Admin Password:** `ChangeMe@2026`
 
@@ -180,7 +180,7 @@ Sample Excel templates are generated on demand via `/download/sample-employees` 
 
 ### Step 1 — Login
 
-1. Go to [https://salary-slip-app-pozd.onrender.com](https://salary-slip-app-pozd.onrender.com)
+1. Go to [https://salary-slip-automation-system.onrender.com](https://salary-slip-automation-system.onrender.com)
 2. Login with: `admin` / `ChangeMe@2026`
 
 ### Step 2 — Upload Employees
@@ -313,7 +313,7 @@ python app.py
 
 ## 🌐 Deployment
 
-Deployed on **Render.com** free tier.
+Deployed on **Render.com** free tier at [https://salary-slip-automation-system.onrender.com](https://salary-slip-automation-system.onrender.com).
 
 **Environment variables set on Render:**
 
