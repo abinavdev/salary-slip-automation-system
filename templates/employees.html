@@ -27,6 +27,7 @@
         </div>
     </form>
 
+    {% if employees %}
     <div class="mobile-only mobile-card-list">
         {% for employee in employees %}
         <article class="data-card">
@@ -55,8 +56,6 @@
                 </form>
             </div>
         </article>
-        {% else %}
-        <p class="empty-state">No employees found{% if search %} for "{{ search }}"{% endif %}.</p>
         {% endfor %}
     </div>
 
@@ -93,10 +92,6 @@
                         </div>
                     </td>
                 </tr>
-                {% else %}
-                <tr>
-                    <td colspan="8" class="muted">No employees found{% if search %} for "{{ search }}"{% endif %}.</td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -112,6 +107,22 @@
         <a class="btn btn-ghost btn-sm" href="{{ url_for('employees_page', page=pagination.next_num, q=search) }}">Next</a>
         {% endif %}
     </nav>
+    {% endif %}
+    {% else %}
+    {% if search %}
+    {% set title = 'No matching employees' %}
+    {% set description = 'No employees match "' ~ search ~ '". Try a different Employee ID or name, or clear the search.' %}
+    {% set cta_url = url_for('employees_page') %}
+    {% set cta_label = 'Clear search' %}
+    {% else %}
+    {% set title = 'No employees yet' %}
+    {% set description = 'Upload your employee master file to add staff records. Salary slips require employees to exist before payroll upload.' %}
+    {% set cta_url = url_for('upload_employees') %}
+    {% set cta_label = 'Upload employees' %}
+    {% set secondary_url = url_for('download_sample_employees') %}
+    {% set secondary_label = 'Download sample sheet' %}
+    {% endif %}
+    {% include 'partials/empty_state.html' %}
     {% endif %}
 </div>
 {% endblock %}

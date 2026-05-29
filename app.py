@@ -32,6 +32,7 @@ from utils.sample_templates import (
     build_salary_sample_workbook,
 )
 from utils.slip_service import process_one_slip
+from utils.ui_helpers import is_action_flash
 
 
 load_dotenv()
@@ -54,6 +55,10 @@ def create_app() -> Flask:
     @app.template_filter("dob_display")
     def dob_display_filter(value):
         return format_dob_display(value) or "-"
+
+    @app.template_filter("is_action_flash")
+    def is_action_flash_filter(message):
+        return is_action_flash(message)
 
     if os.getenv("RENDER") or os.getenv("FLASK_ENV", "").lower() == "production":
         app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -781,7 +786,6 @@ def register_routes(app: Flask) -> None:
 
         db.session.commit()
         total = len(salary_records)
-        flash(f"Salary slip generation complete. Sent: {sent}, Failed: {failed}.", "info")
         return jsonify(
             {
                 "success": sent > 0 and failed < total,

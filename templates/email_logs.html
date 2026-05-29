@@ -14,6 +14,7 @@
 </div>
 
 <div class="card card--flat">
+    {% if logs %}
     <div class="mobile-only mobile-card-list">
         {% for log in logs %}
         <article class="data-card">
@@ -38,8 +39,6 @@
                 </div>
             </div>
         </article>
-        {% else %}
-        <p class="empty-state">No email logs found.</p>
         {% endfor %}
     </div>
 
@@ -69,13 +68,18 @@
                         {% endif %}
                     </td>
                 </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="muted">No email logs found.</td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    {% set title = 'No email logs yet' %}
+    {% set description = 'When you generate and send salary slips from Preview, each dispatch is recorded here with status and timestamp.' %}
+    {% set cta_url = url_for('preview') %}
+    {% set cta_label = 'Go to preview & send' %}
+    {% set secondary_url = url_for('upload_salary') %}
+    {% set secondary_label = 'Upload salary first' %}
+    {% include 'partials/empty_state.html' %}
+    {% endif %}
 </div>
 {% endblock %}

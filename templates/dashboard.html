@@ -4,6 +4,18 @@
 {% block mobile_title %}Dashboard{% endblock %}
 
 {% block content %}
+{% if total_employees == 0 and total_salary_records == 0 and emails_sent == 0 and total_uploads == 0 %}
+<div class="card card--flat section-gap">
+    {% set title = 'Welcome to Nippon Toyota HR Portal' %}
+    {% set description = 'Your database is empty. Start by uploading employee master data, then add a monthly salary sheet to preview and send password-protected slips.' %}
+    {% set cta_url = url_for('upload_employees') %}
+    {% set cta_label = 'Upload employees' %}
+    {% set secondary_url = url_for('download_sample_employees') %}
+    {% set secondary_label = 'Download sample sheet' %}
+    {% include 'partials/empty_state.html' %}
+</div>
+{% endif %}
+
 <div class="stat-grid">
     <div class="card stat-card card--flat">
         <p class="stat-label">Total Employees</p>
@@ -90,7 +102,13 @@
             </table>
         </div>
         {% else %}
-        <p class="muted section-gap">No uploads yet.</p>
+        {% set title = 'No upload history yet' %}
+        {% set description = 'Employee and salary file uploads will appear here with added and updated record counts.' %}
+        {% set cta_url = url_for('upload_employees') %}
+        {% set cta_label = 'Upload employees' %}
+        {% set secondary_url = url_for('upload_salary') %}
+        {% set secondary_label = 'Upload salary' %}
+        {% include 'partials/empty_state.html' %}
         {% endif %}
     </div>
 </div>

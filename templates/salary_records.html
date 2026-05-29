@@ -34,6 +34,7 @@
 </div>
 
 <div class="card card--flat">
+    {% if records %}
     <div class="mobile-only mobile-card-list">
         {% for record in records %}
         <details class="expand-card">
@@ -69,8 +70,6 @@
                 </div>
             </div>
         </details>
-        {% else %}
-        <p class="empty-state">No salary records found.</p>
         {% endfor %}
     </div>
 
@@ -109,15 +108,31 @@
                         </div>
                     </td>
                 </tr>
-                {% else %}
-                <tr>
-                    <td colspan="9" class="muted">No salary records found.</td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    {% if selected_month or selected_year %}
+    {% set title = 'No records for this filter' %}
+    {% set description = 'No salary records match the selected month or year. Upload a salary sheet or reset the filters.' %}
+    {% set cta_url = url_for('salary_records_page') %}
+    {% set cta_label = 'Reset filters' %}
+    {% set secondary_url = url_for('upload_salary') %}
+    {% set secondary_label = 'Upload salary' %}
+    {% else %}
+    {% set title = 'No salary records yet' %}
+    {% set description = 'Upload a monthly salary sheet after employee master data is in place. Records appear here for review and slip generation.' %}
+    {% set cta_url = url_for('upload_salary') %}
+    {% set cta_label = 'Upload salary sheet' %}
+    {% set secondary_url = url_for('upload_employees') %}
+    {% set secondary_label = 'Upload employees first' %}
+    {% endif %}
+    {% include 'partials/empty_state.html' %}
+    {% endif %}
 </div>
 
+{% if records %}
 <p class="payroll-total">Total Payroll: ₹ {{ "{:,.2f}".format(total_payroll) }}</p>
+{% endif %}
 {% endblock %}

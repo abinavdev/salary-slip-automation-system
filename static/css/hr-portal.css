@@ -745,6 +745,38 @@ input[type="checkbox"], input[type="radio"] {
     font-size: var(--text-sm);
 }
 
+.empty-state-card {
+    text-align: center;
+    padding: var(--space-lg) var(--space-md);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.empty-state-card__title {
+    margin: 0 0 8px;
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.empty-state-card__text {
+    margin: 0 0 var(--space-md);
+    font-size: var(--text-sm);
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-state-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    justify-content: center;
+}
+
 /* —— Tablet (768px+) —— */
 @media (min-width: 768px) {
     .main {

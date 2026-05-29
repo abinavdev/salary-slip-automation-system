@@ -86,7 +86,9 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-        <div class="toast {{ category }}">{{ message }}</div>
+        {% if message|is_action_flash %}
+        <div class="toast {{ category }}" role="alert">{{ message }}</div>
+        {% endif %}
         {% endfor %}
     {% endif %}
     {% endwith %}
@@ -145,7 +147,7 @@
     }
 
     setTimeout(function () {
-        document.querySelectorAll(".toast").forEach(function (el) {
+        document.querySelectorAll("#toastStack .toast").forEach(function (el) {
             el.style.opacity = "0";
             el.style.transition = "opacity 0.3s ease";
             setTimeout(function () { el.remove(); }, 320);

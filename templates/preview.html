@@ -11,7 +11,7 @@
             <p class="muted" style="margin:0;">Period: <strong>{{ month }} {{ year }}</strong></p>
             {% endif %}
         </div>
-        <button id="generateSendBtn" class="btn btn-primary btn-sm" type="button">Generate &amp; Send</button>
+        <button id="generateSendBtn" class="btn btn-primary btn-sm" type="button" {% if not records %}disabled{% endif %}>Generate &amp; Send</button>
     </div>
 </div>
 
@@ -32,6 +32,7 @@
 </div>
 
 <div class="card card--flat">
+    {% if records %}
     <label class="muted" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <input type="checkbox" id="selectAll" aria-label="Select all employees">
         Select all employees
@@ -55,8 +56,6 @@
                 <div class="data-card-row"><span class="label">Deductions</span><span class="value">₹ {{ "{:,.2f}".format(record.deductions) }}</span></div>
             </div>
         </article>
-        {% else %}
-        <p class="empty-state">No salary data available for preview.</p>
         {% endfor %}
     </div>
 
@@ -90,12 +89,19 @@
                     <td class="net-salary">₹ {{ "{:,.2f}".format(record.net_salary) }}</td>
                     <td>{{ record.month }}/{{ record.year }}</td>
                 </tr>
-                {% else %}
-                <tr><td colspan="10" class="muted">No salary data available.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    {% set title = 'No salary data to preview' %}
+    {% set description = 'Upload a monthly salary sheet for employees already in the system. After upload you can select staff here and send password-protected slips.' %}
+    {% set cta_url = url_for('upload_salary') %}
+    {% set cta_label = 'Upload salary sheet' %}
+    {% set secondary_url = url_for('upload_employees') %}
+    {% set secondary_label = 'Upload employees first' %}
+    {% include 'partials/empty_state.html' %}
+    {% endif %}
 </div>
 {% endblock %}
 

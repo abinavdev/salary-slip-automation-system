@@ -1,0 +1,13 @@
+{# Inline empty state — not a toast. Pass: title, description, cta_url, cta_label; optional secondary_* #}
+<div class="empty-state-card" role="status">
+    <p class="empty-state-card__title">{{ title }}</p>
+    <p class="empty-state-card__text">{{ description }}</p>
+    {% if cta_url and cta_label %}
+    <div class="empty-state-card__actions">
+        <a href="{{ cta_url }}" class="btn btn-primary btn-sm">{{ cta_label }}</a>
+        {% if secondary_url and secondary_label %}
+        <a href="{{ secondary_url }}" class="btn btn-ghost btn-sm">{{ secondary_label }}</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
