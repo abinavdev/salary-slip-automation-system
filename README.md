@@ -60,6 +60,25 @@ This project fulfills **Task 1: Employee Salary Slip Automation System**, which 
 - Download sample Excel files directly from the app
 - Dashboard with live statistics
 - Mobile-responsive admin UI with collapsible navigation
+- **PostgreSQL on Render** for persistent data across redeploys (SQLite for local dev)
+- **Bulk slip dispatch UX:** one batch summary after all employees finish (progress bar while processing)
+- **Inline empty states** on list pages with call-to-action buttons (no toast spam on first login)
+- **Duplicate-send safeguards:** deduplicated employee selection and backend record handling
+
+---
+
+## 🆕 Recent Updates (since PostgreSQL migration)
+
+Changes added after the initial PostgreSQL deployment documentation:
+
+| Area | What changed |
+|------|----------------|
+| **Database** | Production uses Render PostgreSQL via `DATABASE_URL`; local dev still defaults to `salary_system.db` when unset. `psycopg2-binary` added to dependencies. |
+| **Duplicate emails** | Fixed an issue where **Select All** on Preview could send two emails per employee (duplicate mobile + desktop checkboxes). Selection and backend processing now deduplicate by `employee_id`. |
+| **Empty data UX** | Replaced stacked toast-style empty messages with **inline empty-state cards** on Dashboard, Employees, Salary Records, Email Logs, and Preview. Toasts remain for real actions only (upload success/failure, login, edits, deletes). |
+| **Batch notifications** | Preview **Generate & Send** shows a **single summary card** when the full batch completes (Total Processed, Successfully Sent, Failed). No per-employee success toasts. Per-employee status is in **Email Logs** only. |
+| **While sending** | Button disabled, progress indicator, and duplicate-click prevention during multi-employee runs (one API request per employee for Render free-tier stability). |
+| **Debug** | Temporary admin-only `GET /db-info` endpoint returns masked DB URI, dialect, and table row counts. |
 
 ---
 
@@ -75,6 +94,7 @@ This project fulfills **Task 1: Employee Salary Slip Automation System**, which 
 | File Parsing | Pandas, openpyxl |
 | Frontend | HTML, CSS, Vanilla JavaScript |
 | Deployment | Render.com |
+| Database driver | psycopg2-binary (PostgreSQL) |
 | Environment | python-dotenv |
 
 ---
@@ -151,7 +171,9 @@ salary-slip-app/
 │   ├── dashboard.html      # Main dashboard
 │   ├── upload_employees.html
 │   ├── upload_salary.html
-│   ├── preview.html        # Salary preview + send
+│   ├── preview.html        # Salary preview + batch send (summary UI)
+│   ├── partials/
+│   │   └── empty_state.html  # Reusable inline empty-state card
 │   ├── employees.html      # Employee management
 │   ├── edit_employee.html
 │   ├── salary_records.html
@@ -166,6 +188,7 @@ salary-slip-app/
 │   ├── slip_service.py       # PDF + email orchestration
 │   ├── auth.py               # Admin authentication
 │   ├── db_migrate.py         # Schema upgrades (SQLite + PostgreSQL)
+│   ├── ui_helpers.py         # Flash filtering (empty states vs actions)
 │   ├── paths.py              # Upload/PDF path helpers
 │   └── logging_config.py     # Logging setup
 ├── uploads/                # Temporary uploaded files
@@ -202,8 +225,15 @@ Sample Excel templates are generated on demand via `/download/sample-employees` 
 ### Step 4 — Generate & Send
 
 1. On the **Preview** page, select specific employees or **Select All**
-2. Click **Generate PDFs & Send Emails**
-3. Each employee receives their password-protected salary slip PDF via email
+2. Click **Generate & Send** — the button disables and a **progress bar** runs while each employee is processed (one request per employee on Render free tier)
+3. When finished, a **single summary card** appears, for example:
+
+   **Salary Slip Generation Completed**  
+   Total Processed: 4 · Successfully Sent: 4 · Failed: 0
+
+4. Each successful employee receives their password-protected salary slip PDF via email
+
+> **Tip:** Use **Email Logs** for per-employee send status and timestamps — not repeated on-screen toasts.
 
 > 📬 **Note on Email Delivery:** Emails are sent via SendGrid API (free tier). If the email does not appear in the inbox, please check the **spam/junk** folder. This is **not** an application bug — it is a known limitation of SendGrid free tier when used with a personal email address without a verified custom domain. In a production environment with a verified business domain, emails would land directly in the inbox.
 
@@ -363,6 +393,8 @@ Tables are created automatically on first startup via `db.create_all()`. No migr
 - Render `postgres://` URLs are normalized to `postgresql://` automatically for SQLAlchemy compatibility
 - Email spam behaviour is a known limitation of SendGrid free tier with personal email addresses — **not** an application defect. Production deployment with a verified custom domain would resolve this completely.
 - Date of birth supports Excel date cells, `DD-MM-YYYY` text, and `YYYY-MM-YYYY` text with automatic conversion
+- Preview batch send: `templates/preview.html` + `utils/ui_helpers.py` (`is_action_flash`) keep the UI professional for large payroll runs
+- Temporary `/db-info` (requires admin session) for verifying database connection and row counts after deploy
 
 ---
 

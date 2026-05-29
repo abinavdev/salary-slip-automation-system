@@ -94,9 +94,94 @@
             color: #241b08; font-weight: 700; display: grid; place-items: center;
             font-family: "Playfair Display", serif; margin-bottom: 12px;
         }
+        .demo-credentials {
+            margin-bottom: 18px;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            background: rgba(26, 34, 53, 0.65);
+        }
+        .demo-credentials__heading {
+            margin: 0 0 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--accent-light);
+        }
+        .demo-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            min-width: 0;
+        }
+        .demo-row:last-of-type {
+            margin-bottom: 10px;
+        }
+        .demo-label {
+            flex: 0 0 72px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .demo-value {
+            flex: 1;
+            min-width: 0;
+            font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+            font-size: 13px;
+            color: var(--text);
+            background: #1a2235;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .copy-btn {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #1a2235;
+            color: var(--accent-light);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .copy-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.25);
+        }
+        .copy-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+        .demo-note {
+            margin: 0;
+            font-size: 11px;
+            line-height: 1.45;
+            color: var(--muted);
+        }
+        .copy-feedback {
+            min-height: 16px;
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--success);
+        }
         @media (min-width: 480px) {
             .login-card { padding: 28px 24px; }
             h1 { font-size: 1.5rem; }
+            .demo-label { flex-basis: 80px; }
         }
     </style>
 </head>
@@ -105,6 +190,26 @@
         <div class="brand-badge">NT</div>
         <h1>Admin Login</h1>
         <p class="muted">Nippon Toyota HR Portal &mdash; authorized access only</p>
+
+        <section class="demo-credentials" aria-labelledby="demo-credentials-heading">
+            <p id="demo-credentials-heading" class="demo-credentials__heading">Evaluation Access</p>
+            <div class="demo-row">
+                <span class="demo-label">Username</span>
+                <code class="demo-value" id="demoUsernameValue">admin</code>
+                <button type="button" class="copy-btn" data-copy-target="demoUsernameValue" data-copy-label="Username" aria-label="Copy username">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
+            </div>
+            <div class="demo-row">
+                <span class="demo-label">Password</span>
+                <code class="demo-value" id="demoPasswordValue">ChangeMe@2026</code>
+                <button type="button" class="copy-btn" data-copy-target="demoPasswordValue" data-copy-label="Password" aria-label="Copy password">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
+            </div>
+            <p class="demo-note">These credentials are provided for project evaluation and demonstration purposes only.</p>
+            <p class="copy-feedback" id="copyFeedback" aria-live="polite"></p>
+        </section>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -124,5 +229,57 @@
             <button type="submit" class="btn">Sign In</button>
         </form>
     </div>
+    <script>
+        (function () {
+            const feedback = document.getElementById("copyFeedback");
+            document.querySelectorAll(".copy-btn[data-copy-target]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    const targetId = btn.getAttribute("data-copy-target");
+                    const label = btn.getAttribute("data-copy-label") || "Value";
+                    const el = document.getElementById(targetId);
+                    const text = el ? el.textContent.trim() : "";
+                    if (!text) {
+                        return;
+                    }
+                    function showCopied() {
+                        if (feedback) {
+                            feedback.textContent = label + " copied to clipboard.";
+                            window.setTimeout(function () {
+                                feedback.textContent = "";
+                            }, 2000);
+                        }
+                    }
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(showCopied).catch(function () {
+                            fallbackCopy(text, showCopied);
+                        });
+                    } else {
+                        fallbackCopy(text, showCopied);
+                    }
+                });
+            });
+
+            function fallbackCopy(text, onSuccess) {
+                const area = document.createElement("textarea");
+                area.value = text;
+                area.setAttribute("readonly", "");
+                area.style.position = "fixed";
+                area.style.left = "-9999px";
+                document.body.appendChild(area);
+                area.select();
+                try {
+                    document.execCommand("copy");
+                    if (onSuccess) {
+                        onSuccess();
+                    }
+                } catch (err) {
+                    if (feedback) {
+                        feedback.textContent = "Copy not supported in this browser.";
+                    }
+                }
+                document.body.removeChild(area);
+            }
+        })();
+    </script>
 </body>
 </html>
