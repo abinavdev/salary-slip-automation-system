@@ -371,4 +371,6 @@ Deployed on **Render.com** free tier at [https://salary-slip-automation-system.o
 ### Salary Slip Email Template
 ![Salary Slip Email](screenshots/email.jpeg)
 
+---
+
 **Nippon Toyota | Internship Submission — Task 1**
