@@ -342,4 +342,33 @@ Deployed on **Render.com** free tier at [https://salary-slip-automation-system.o
 
 ---
 
+## Application Screenshots
+
+### Admin Authentication
+![Admin Authentication](screenshots/admin-auth.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Employee Management
+![Employees](screenshots/employees.png)
+
+### Upload Employee Data
+![Upload Employee Data](screenshots/upload-employee.png)
+
+### Upload Salary Data
+![Upload Salary Data](screenshots/upload-salary.png)
+
+### Salary Records
+![Salary Records](screenshots/salary-records.png)
+
+### Email Logs
+![Email Logs](screenshots/email-logs.png)
+
+### Generated Salary Slip PDF
+![Generated Salary Slip PDF](screenshots/pdf.jpeg)
+
+### Salary Slip Email Template
+![Salary Slip Email](screenshots/email.jpeg)
+
 **Nippon Toyota | Internship Submission — Task 1**
