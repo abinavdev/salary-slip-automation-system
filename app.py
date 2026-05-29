@@ -115,6 +115,25 @@ def register_routes(app: Flask) -> None:
             }
         ), (200 if core_ok else 503)
 
+    @app.get("/db-info")
+    def db_info():
+        """Temporary debug endpoint — database URI and table row counts."""
+        uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+        dialect_name = db.engine.dialect.name
+        if dialect_name == "postgres":
+            dialect_name = "postgresql"
+
+        return jsonify(
+            {
+                "database_uri": mask_database_uri(uri),
+                "dialect": dialect_name,
+                "employee_count": Employee.query.count(),
+                "salary_record_count": SalaryRecord.query.count(),
+                "email_log_count": EmailLog.query.count(),
+                "upload_log_count": UploadLog.query.count(),
+            }
+        )
+
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if session.get("admin_logged_in"):
