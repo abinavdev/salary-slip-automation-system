@@ -372,7 +372,7 @@ Tables are created automatically on first startup via `db.create_all()`. No migr
 
 - Built using Visual Studio Code (VS Code) with development assistance from  Cursor AI and ChatGPT
 - All architectural decisions, debugging, and deployment handled manually
-- Tested locally on Windows and deployed on Linux (Render)
+- Tested locally on Windows, verified across desktop and mobile devices for responsive user experience, and deployed on Linux (Render)
 - SendGrid API used for reliable cloud email delivery (no SMTP port blocking)
 - PostgreSQL on Render for persistent employee/salary/email data; SQLite used automatically for local development when `DATABASE_URL` is unset
 - Render `postgres://` URLs are normalized to `postgresql://` automatically for SQLAlchemy compatibility
