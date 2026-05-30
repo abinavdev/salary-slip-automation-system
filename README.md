@@ -370,7 +370,7 @@ Tables are created automatically on first startup via `db.create_all()`. No migr
 
 ## Developer Notes
 
-- Built using Visual Studio Code (VS Code) with development assistance from ChatGPT
+- Built using Visual Studio Code (VS Code) with development assistance from  Cursor AI and ChatGPT
 - All architectural decisions, debugging, and deployment handled manually
 - Tested locally on Windows and deployed on Linux (Render)
 - SendGrid API used for reliable cloud email delivery (no SMTP port blocking)
